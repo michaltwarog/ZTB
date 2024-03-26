@@ -1,7 +1,7 @@
 package types
 
 type Note struct {
-	ID                 int
+	ID                 string
 	Title              string
 	Content            string
 	DateOfCreation     string
