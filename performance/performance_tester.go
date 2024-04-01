@@ -36,7 +36,7 @@ func RunPerformanceTest() {
 		return
 	}
 
-	file, err := os.OpenFile("performance.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("performance/data/dynamo.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println("Error opening performance.log:", err)
 		return
@@ -44,7 +44,7 @@ func RunPerformanceTest() {
 	defer file.Close()
 
 	fmt.Println("Reading data from files")
-	_, notes, _, err := readDataFromFiles()
+	users, notes, updatedNotes, err := readDataFromFiles()
 	if err != nil {
 		fmt.Println("Error reading files:", err)
 		return
@@ -55,13 +55,15 @@ func RunPerformanceTest() {
 		StorageManager: manager,
 		logFile:        file,
 	}
-	// ps.measureInsertUserPerformance(users)
+	ps.measureInsertUserPerformance(users)
 	ps.measureInsertNotePerformance(notes)
-	// ps.measureGetUserPerformance(userIDs)
-	// ps.measureGetNotePerformance(noteIDs)
-	// ps.measureGetUserNotesPerformance(userIDs)
-	// ps.measurePatchUserPerformance(users)
-	// ps.measurePatchNotePerformance(notes)
+	ps.measureGetUserPerformance(users)
+	ps.measureGetNotePerformance(notes)
+	ps.measureGetUserNotesPerformance(users)
+	ps.measurePatchUserPerformance(users)
+	ps.measurePatchNotePerformance(updatedNotes)
+	ps.measureDeleteNotePerformance(notes)
+	ps.measureDeleteUserPerformance(users)
 
 }
 
@@ -92,46 +94,46 @@ func (ps PerformanceSuite) measureInsertNotePerformance(notes []types.Note) {
 	}
 }
 
-func (ps PerformanceSuite) measureGetUserPerformance(userIDs []string) {
+func (ps PerformanceSuite) measureGetUserPerformance(users []types.User) {
 
 	start := time.Now()
-	for i, id := range userIDs {
-		_, err := ps.StorageManager.GetUser(id)
+	for i, u := range users {
+		_, err := ps.StorageManager.GetUser(u.ID)
 		if err != nil {
 			fmt.Println("Error getting user:", err)
 			return
 		}
 
-		ps.logPerformanceRecord("Get", "User", i, len(userIDs), time.Since(start))
+		ps.logPerformanceRecord("Get", "User", i, len(users), time.Since(start))
 	}
 }
 
-func (ps PerformanceSuite) measureGetNotePerformance(noteIDs []string) {
+func (ps PerformanceSuite) measureGetNotePerformance(notes []types.Note) {
 
 	start := time.Now()
-	for i, id := range noteIDs {
-		_, err := ps.StorageManager.GetNote(id)
+	for i, n := range notes {
+		_, err := ps.StorageManager.GetNote(n.ID)
 		if err != nil {
 			fmt.Println("Error getting note:", err)
 			return
 		}
 
-		ps.logPerformanceRecord("Get", "Note", i, len(noteIDs), time.Since(start))
+		ps.logPerformanceRecord("Get", "Note", i, len(notes), time.Since(start))
 	}
 }
 
-func (ps PerformanceSuite) measureGetUserNotesPerformance(userIDs []string) {
+func (ps PerformanceSuite) measureGetUserNotesPerformance(users []types.User) {
 
 	start := time.Now()
 	notesPerUser := 1000
-	for i, id := range userIDs {
-		_, err := ps.StorageManager.GetNotes(id)
+	for i, u := range users {
+		_, err := ps.StorageManager.GetNotes(u.ID)
 		if err != nil {
 			fmt.Println("Error getting user notes:", err)
 			return
 		}
 
-		ps.logPerformanceRecord("Get", "User Notes", i, len(userIDs)*notesPerUser, time.Since(start))
+		ps.logPerformanceRecord("Get", "User Notes", i, len(users)*notesPerUser, time.Since(start))
 	}
 }
 
