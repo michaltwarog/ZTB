@@ -5,7 +5,7 @@ type Note struct {
 	Title              string
 	Content            string
 	DateOfCreation     string
-	DateofModification string
+	DateOfModification string
 	IsShared           bool
-	UserID             int
+	UserID             string
 }

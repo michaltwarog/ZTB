@@ -2,7 +2,6 @@ package dynamodb
 
 import (
 	"context"
-	localtypes "database-tester/types"
 	"fmt"
 	"log"
 	"time"
@@ -10,10 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/google/uuid"
 )
 
 type DynamoManager struct {
@@ -25,7 +21,9 @@ func NewDynamoManager(profile string) (*DynamoManager, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &DynamoManager{Client: client}, nil
+	manager := &DynamoManager{Client: client}
+	// manager.createTables()
+	return manager, nil
 }
 
 // newclient constructs a new dynamodb client using a default configuration
@@ -55,8 +53,7 @@ func newClient(profile string) (*dynamodb.Client, error) {
 func (db DynamoManager) CreateDynamoDBTable(
 	tableName string, input *dynamodb.CreateTableInput,
 ) error {
-	var tableDesc *types.TableDescription
-	table, err := db.Client.CreateTable(context.TODO(), input)
+	_, err := db.Client.CreateTable(context.TODO(), input)
 	if err != nil {
 		log.Printf("Failed to create table %v with error: %v\n", tableName, err)
 	} else {
@@ -66,55 +63,26 @@ func (db DynamoManager) CreateDynamoDBTable(
 		if err != nil {
 			log.Printf("Failed to wait on create table %v with error: %v\n", tableName, err)
 		}
-		tableDesc = table.TableDescription
 	}
-
-	fmt.Println(tableDesc)
 
 	return err
 }
 
-func (db DynamoManager) InsertNote(note localtypes.Note) (id string, err error) {
-	note.ID = uuid.New().String()
-	marshalledNote, err := attributevalue.MarshalMap(note)
+func (db DynamoManager) createTables() {
+	err := db.CreateDynamoDBTable(NotesTableName, NotesTableInput)
 	if err != nil {
-		fmt.Println("Error marshalling note")
-		fmt.Print(err)
-		return
-	}
-	_, err = db.Client.PutItem(context.TODO(), &dynamodb.PutItemInput{
-		TableName: aws.String(NotesTableName), Item: marshalledNote,
-	})
-
-	if err != nil {
-		fmt.Println("Error inserting note")
-		fmt.Print(err)
+		fmt.Println("Error creating notes table")
+		fmt.Println(err)
+		panic(err)
 		return
 	}
 
-	return note.ID, err
-}
-func (db DynamoManager) GetNote(id string) (note localtypes.Note, found bool, err error) {
-	result, err := db.Client.GetItem(context.TODO(), &dynamodb.GetItemInput{
-		TableName: aws.String(NotesTableName),
-		Key: map[string]types.AttributeValue{
-			"ID": &types.AttributeValueMemberS{Value: id},
-		},
-	})
+	err = db.CreateDynamoDBTable(UsersTableName, UsersTableInput)
+
 	if err != nil {
-		fmt.Println("Error getting note")
-		fmt.Print(err)
+		fmt.Println("Error creating users table")
+		fmt.Println(err)
+		panic(err)
 		return
 	}
-	if result.Item == nil {
-		return
-	}
-	err = attributevalue.UnmarshalMap(result.Item, &note)
-	if err != nil {
-		fmt.Println("Error unmarshalling note")
-		fmt.Print(err)
-		return
-	}
-	found = true
-	return
 }
