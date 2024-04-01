@@ -1,11 +1,11 @@
 package types
 
 type Note struct {
-	ID                 int
+	ID                 string
 	Title              string
 	Content            string
 	DateOfCreation     string
-	DateofModification string
+	DateOfModification string
 	IsShared           bool
-	UserID             int
+	UserID             string
 }
