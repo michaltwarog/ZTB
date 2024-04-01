@@ -16,8 +16,8 @@ type DynamoManager struct {
 	Client *dynamodb.Client
 }
 
-func NewDynamoManager(profile string) (*DynamoManager, error) {
-	client, err := newClient(profile)
+func NewDynamoManager() (*DynamoManager, error) {
+	client, err := newClient("local")
 	if err != nil {
 		return nil, err
 	}
