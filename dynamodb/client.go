@@ -22,7 +22,8 @@ func NewDynamoManager() (*DynamoManager, error) {
 		return nil, err
 	}
 	manager := &DynamoManager{Client: client}
-	// manager.createTables()
+	manager.deleteTables()
+	manager.createTables() // uncomment to create tables
 	return manager, nil
 }
 
@@ -77,6 +78,8 @@ func (db DynamoManager) createTables() {
 		return
 	}
 
+	fmt.Println("Created notes table")
+
 	err = db.CreateDynamoDBTable(UsersTableName, UsersTableInput)
 
 	if err != nil {
@@ -85,4 +88,43 @@ func (db DynamoManager) createTables() {
 		panic(err)
 		return
 	}
+	fmt.Println("Created users table")
+
+}
+
+func (db DynamoManager) deleteTables() {
+	err := db.deleteDynamoDBTable(NotesTableName)
+	if err != nil {
+		fmt.Println("Error deleting notes table")
+		fmt.Println(err)
+	} else {
+		fmt.Println("Deleted notes table")
+	}
+
+	err = db.deleteDynamoDBTable(UsersTableName)
+
+	if err != nil {
+		fmt.Println("Error deleting users table")
+		fmt.Println(err)
+	} else {
+		fmt.Println("Deleted users table")
+	}
+}
+
+func (db DynamoManager) deleteDynamoDBTable(tableName string) error {
+	_, err := db.Client.DeleteTable(context.TODO(), &dynamodb.DeleteTableInput{
+		TableName: aws.String(tableName),
+	})
+	if err != nil {
+		log.Printf("Failed to delete table %v with error: %v\n", tableName, err)
+	} else {
+		waiter := dynamodb.NewTableNotExistsWaiter(db.Client)
+		err = waiter.Wait(context.TODO(), &dynamodb.DescribeTableInput{
+			TableName: aws.String(tableName)}, 5*time.Minute)
+		if err != nil {
+			log.Printf("Failed to wait on delete table %v with error: %v\n", tableName, err)
+		}
+	}
+
+	return err
 }

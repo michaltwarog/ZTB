@@ -111,15 +111,16 @@ func main() {
 		}
 	}
 	start := time.Now()
-	n_users := 1000
+	nUsers := 100
+	nNotes := 100
 	updatedNote := types.Note{}
 	// Generate and append users and user IDs
-	for i := 0; i < n_users; i++ {
+	for i := 0; i < nUsers; i++ {
 
 		if i%100 == 0 {
-			fmt.Println("Percent done:", float32(i)/float32(n_users)*100)
+			fmt.Println("Percent done:", float32(i)/float32(nUsers)*100)
 			fmt.Printf("Time elapsed: %.0f seconds\n", time.Since(start).Seconds())
-			remaining := float64(n_users-i) * time.Since(start).Seconds() / float64(i)
+			remaining := float64(nUsers-i) * time.Since(start).Seconds() / float64(i)
 			fmt.Printf("Time remaining: %.0f seconds\n", remaining)
 		}
 		user := generateRandomUser()
@@ -129,7 +130,7 @@ func main() {
 			fmt.Println("Error writing user ID to file:", err)
 		}
 		// Generate and append notes and note IDs
-		for i := 0; i < 1000; i++ {
+		for i := 0; i < nNotes; i++ {
 			note := generateRandomNote(user.ID)
 			notes = append(notes, note)
 			{

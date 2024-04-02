@@ -6,7 +6,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-const NotesTableName string = "NotesTableNameTable"
+const NotesTableName string = "NotesTable"
+const UsersTableName string = "UsersTable"
 
 var NotesTableInput *dynamodb.CreateTableInput = &dynamodb.CreateTableInput{
 	AttributeDefinitions: []types.AttributeDefinition{
@@ -43,8 +44,6 @@ var NotesTableInput *dynamodb.CreateTableInput = &dynamodb.CreateTableInput{
 	BillingMode: types.BillingModePayPerRequest,
 }
 
-const UsersTableName string = "NotesTableNameTable"
-
 var UsersTableInput *dynamodb.CreateTableInput = &dynamodb.CreateTableInput{
 	AttributeDefinitions: []types.AttributeDefinition{
 		{
@@ -58,6 +57,6 @@ var UsersTableInput *dynamodb.CreateTableInput = &dynamodb.CreateTableInput{
 			KeyType:       types.KeyTypeHash,
 		},
 	},
-	TableName:   aws.String(NotesTableName),
+	TableName:   aws.String(UsersTableName),
 	BillingMode: types.BillingModePayPerRequest,
 }
