@@ -2,6 +2,7 @@ package performance
 
 import (
 	"database-tester/dynamodb"
+	oracledb "database-tester/orcl"
 	"database-tester/types"
 	"fmt"
 	"math"
@@ -65,6 +66,47 @@ func RunPerformanceTest() {
 	ps.measureDeleteNotePerformance(notes)
 	ps.measureDeleteUserPerformance(users)
 
+}
+
+func RunOraclePerformanceTest() {
+	fmt.Println("Creating OracleDB manager")
+	manager, err := oracledb.NewOracleManager()
+	if err != nil {
+		fmt.Println("Error creating OracleDB manager:", err)
+		return
+	}
+
+	file, err := os.OpenFile("performance/data/oracle.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Error opening oracle.log:", err)
+		return
+	}
+	defer file.Close()
+
+	fmt.Println("Reading data from files")
+	// Assuming readDataFromFiles function is implemented and reads user and note data from some files
+	users, notes, updatedNotes, err := readDataFromFiles()
+	if err != nil {
+		fmt.Println("Error reading files:", err)
+		return
+	}
+
+	fmt.Println("Starting Oracle performance test")
+	ps := PerformanceSuite{
+		StorageManager: manager,
+		logFile:        file,
+	}
+	// Assuming the PerformanceSuite methods are already implemented for Oracle operations
+	ps.measureInsertUserPerformance(users)
+	ps.measureInsertNotePerformance(notes)
+	ps.measureGetUserPerformance(users)
+	ps.measureGetNotePerformance(notes)
+	// This function might need to be adjusted or removed depending on if it's applicable to your Oracle schema
+	ps.measureGetUserNotesPerformance(users)
+	ps.measurePatchUserPerformance(users)
+	ps.measurePatchNotePerformance(updatedNotes)
+	ps.measureDeleteNotePerformance(notes)
+	ps.measureDeleteUserPerformance(users)
 }
 
 func (ps PerformanceSuite) measureInsertUserPerformance(users []types.User) {
