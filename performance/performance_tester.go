@@ -84,7 +84,6 @@ func RunOraclePerformanceTest() {
 	defer file.Close()
 
 	fmt.Println("Reading data from files")
-	// Assuming readDataFromFiles function is implemented and reads user and note data from some files
 	users, notes, updatedNotes, err := readDataFromFiles()
 	if err != nil {
 		fmt.Println("Error reading files:", err)
