@@ -90,18 +90,18 @@ func RunOraclePerformanceTest() {
 		fmt.Println("Error reading files:", err)
 		return
 	}
-
+	_ = updatedNotes
+	_ = users
+	_ = notes
 	fmt.Println("Starting Oracle performance test")
 	ps := PerformanceSuite{
 		StorageManager: manager,
 		logFile:        file,
 	}
-	// Assuming the PerformanceSuite methods are already implemented for Oracle operations
 	ps.measureInsertUserPerformance(users)
 	ps.measureInsertNotePerformance(notes)
 	ps.measureGetUserPerformance(users)
 	ps.measureGetNotePerformance(notes)
-	// This function might need to be adjusted or removed depending on if it's applicable to your Oracle schema
 	ps.measureGetUserNotesPerformance(users)
 	ps.measurePatchUserPerformance(users)
 	ps.measurePatchNotePerformance(updatedNotes)
