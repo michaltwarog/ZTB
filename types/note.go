@@ -1,11 +1,11 @@
 package types
 
 type Note struct {
-	ID_Note              int
-	Title                string
-	Content              string
-	Date_Of_Creation     string
-	Date_Of_Modification string
-	Is_Shared            bool
-	ID_User              int
+	ID                 string `json:"id"`
+	Title              string `json:"title"`
+	Content            string `json:"content"`
+	DateOfCreation     string `json:"date_of_creation"`
+	DateOfModification string `json:"date_of_modification"`
+	IsShared           bool   `json:"is_shared"`
+	UserID             string `json:"user_id"`
 }

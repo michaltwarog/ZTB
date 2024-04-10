@@ -1,11 +1,11 @@
 package types
 
 type User struct {
-	ID         int
-	First_Name string
-	Last_Name  string
-	Email      string
-	Username   string
-	Is_Admin   bool
-	Is_Enabled bool
+	ID        string `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Username  string `json:"username"`
+	IsAdmin   bool   `json:"is_admin"`
+	IsEnabled bool   `json:"is_enabled"`
 }
