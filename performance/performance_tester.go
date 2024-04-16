@@ -20,7 +20,7 @@ type StorageManager interface {
 	GetUser(id string) (user types.User, err error)
 	PatchUser(user types.User) (id string, err error)
 	GetUserStats(userID string) (stats types.UserStats, err error)
-	GetUserModifiedNotesStats(userID string) (stats types.UserStats, err error)
+	GetUserModifiedNotesStats(userID string) (stats types.ModifiedNotesStats, err error)
 	DeleteUser(user types.User) (id string, err error)
 }
 
@@ -100,17 +100,21 @@ func RunOraclePerformanceTest() {
 		StorageManager: manager,
 		logFile:        file,
 	}
-	ps.measureInsertUserPerformance(users)
-	ps.measureInsertNotePerformance(notes)
-	ps.measureGetUserPerformance(users)
-	ps.measureGetNotePerformance(notes)
-	ps.measureGetUserNotesPerformance(users)
-	ps.measureGetUserStatsPerformance(users)
-	ps.measurePatchUserPerformance(users)
-	ps.measurePatchNotePerformance(updatedNotes)
+	// ps.measureInsertUserPerformance(users)
+	// ps.measureInsertNotePerformance(notes)
+	// ps.measureGetUserPerformance(users)
+	// ps.measureGetNotePerformance(notes)
+	// ps.measureGetUserNotesPerformance(users)
+
+	// ps.measureGetUserStatsPerformance(users)
+
+	// ps.measurePatchUserPerformance(users)
+	// ps.measurePatchNotePerformance(updatedNotes)
+
 	ps.getUserModifiedNotesStatsPerformance(users)
-	ps.measureDeleteNotePerformance(notes)
-	ps.measureDeleteUserPerformance(users)
+
+	// ps.measureDeleteNotePerformance(notes)
+	// ps.measureDeleteUserPerformance(users)
 }
 
 func (ps PerformanceSuite) measureInsertUserPerformance(users []types.User) {
@@ -178,7 +182,6 @@ func (ps PerformanceSuite) measureGetUserNotesPerformance(users []types.User) {
 			fmt.Println("Error getting user notes:", err)
 			return
 		}
-
 		ps.logPerformanceRecord("Get", "User Notes", i, len(users)*notesPerUser, time.Since(start))
 	}
 }
