@@ -1,27 +1,27 @@
 package dynamodb
 
-import "database-tester/types"
+import (
+	"database-tester/types"
+	"time"
+)
 
 func (db DynamoManager) GetUserStats(userID string) (stats types.UserStats, err error) {
-	// Query the notes table for the user
+
 	notes, err := db.GetNotes(userID)
 	if err != nil {
 		return
 	}
-	// Count the notes
-	stats.TotalNotes = len(notes)
-	// Count the notes that have been updated
+
+	stats.NotesCount = len(notes)
 	for _, note := range notes {
-		if note.ModifiedAt != note.CreatedAt {
-			stats.ModifiedNotes++
+		if note.IsShared {
+			stats.SharedCount++
+		}
+		if note.DateOfCreation > stats.LatestNoteDate {
+			stats.LatestNoteDate = note.DateOfCreation
 		}
 	}
-	// Count the notes that have been deleted
-	for _, note := range notes {
-		if note.DeletedAt != 0 {
-			stats.DeletedNotes++
-		}
-	}
+
 	return
 }
 func (db DynamoManager) GetUserModifiedNotesStats(userID string) (stats types.ModifiedNotesStats, err error) {
@@ -30,11 +30,26 @@ func (db DynamoManager) GetUserModifiedNotesStats(userID string) (stats types.Mo
 	if err != nil {
 		return
 	}
-	// Count the notes that have been updated
+
+	latestModificationTime := ""
+	maxUnmodifiedTime := ""
+	var avgModificationTime time.Duration
+
 	for _, note := range notes {
-		if note.ModifiedAt != note.CreatedAt {
-			stats.ModifiedNotes++
+		if note.DateOfModification != note.DateOfCreation && note.DateOfModification != "" {
+			if latestModificationTime == "" || note.DateOfModification > latestModificationTime {
+				latestModificationTime = note.DateOfModification
+			}
+			if maxUnmodifiedTime == "" || note.DateOfModification < maxUnmodifiedTime {
+				maxUnmodifiedTime = note.DateOfModification
+			}
+
+			layout := "2006-01-02"
+			doc, _ := time.Parse(layout, note.DateOfModification)
+			dom, _ := time.Parse(layout, note.DateOfCreation)
+			avgModificationTime = avgModificationTime + (doc.Sub(dom))
 		}
 	}
+
 	return
 }

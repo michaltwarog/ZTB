@@ -67,8 +67,9 @@ func RunPerformanceTest() {
 	ps.measurePatchUserPerformance(users)
 	ps.measurePatchNotePerformance(updatedNotes)
 	ps.getUserModifiedNotesStatsPerformance(users)
-	ps.measureDeleteNotePerformance(notes)
-	ps.measureDeleteUserPerformance(users)
+	ps.measureGetUserStatsPerformance(users)
+	// ps.measureDeleteNotePerformance(notes)
+	// ps.measureDeleteUserPerformance(users)
 
 }
 
