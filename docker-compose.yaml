@@ -9,3 +9,17 @@ services:
    volumes:
      - "./docker/dynamodb:/home/dynamodblocal/data"
    working_dir: /home/dynamodblocal
+ mysql-ztb:
+    image: mysql:8.0.32
+    container_name: mysql-ztb
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: mysql_ztb
+      MYSQL_USER: adminuser
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data:/var/lib/mysql
+      - ./mysqldb/initdb:/docker-entrypoint-initdb.d
+    restart: unless-stopped
