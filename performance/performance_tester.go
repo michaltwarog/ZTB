@@ -106,15 +106,15 @@ func RunOraclePerformanceTest() {
 	// ps.measureGetNotePerformance(notes)
 	// ps.measureGetUserNotesPerformance(users)
 
-	// ps.measureGetUserStatsPerformance(users)
+	ps.measureGetUserStatsPerformance(users)
 
 	// ps.measurePatchUserPerformance(users)
 	// ps.measurePatchNotePerformance(updatedNotes)
 
-	// ps.getUserModifiedNotesStatsPerformance(users)
+	ps.getUserModifiedNotesStatsPerformance(users)
 
-	ps.measureDeleteNotePerformance(notes)
-	ps.measureDeleteUserPerformance(users)
+	// ps.measureDeleteNotePerformance(notes)
+	// ps.measureDeleteUserPerformance(users)
 }
 
 func (ps PerformanceSuite) measureInsertUserPerformance(users []types.User) {
