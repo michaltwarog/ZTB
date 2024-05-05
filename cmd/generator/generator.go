@@ -111,8 +111,8 @@ func main() {
 		}
 	}
 	start := time.Now()
-	nUsers := 100
-	nNotes := 100
+	nUsers := 10000
+	nNotes := 10000
 	updatedNote := types.Note{}
 	// Generate and append users and user IDs
 	for i := 0; i < nUsers; i++ {

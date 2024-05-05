@@ -3,6 +3,7 @@ package oracledb
 import (
 	"database-tester/types"
 	"database/sql"
+	"fmt"
 	"log"
 )
 
@@ -39,7 +40,7 @@ func (om *OracleManager) GetUserStats(userID string) (types.UserStats, error) {
 	stats.NotesCount = int(totalNotes.Int64)
 	stats.SharedCount = int(sharedNotes.Int64)
 	stats.LatestNoteDate = latestNote.String
-
+	fmt.Println("stats", stats)
 	return stats, nil
 }
 
@@ -47,24 +48,39 @@ func (om *OracleManager) GetUserModifiedNotesStats(userID string) (types.Modifie
 	var stats types.ModifiedNotesStats
 
 	var firstName, lastName, email string
-	var avgModificationTime, maxUnmodifiedTime string
-	var latestModification sql.NullTime
+	var avgModificationTime, maxUnmodifiedTime, latestModification string // Change latestModification to string
 
 	query := `SELECT
-		u.first_name,
-		u.last_name,
-		u.email,
-		TO_CHAR(AVG(n.date_of_modification - n.date_of_creation), 'YYYY-MM-DD HH24:MI:SS') AS avg_modification_time,
-		TO_CHAR(MAX(CASE WHEN n.date_of_modification IS NOT NULL THEN n.date_of_modification - n.date_of_creation ELSE NULL END), 'DD HH24:MI:SS') AS max_unmodified_time,
-		TO_CHAR(MAX(n.date_of_modification), 'YYYY-MM-DD HH24:MI:SS') AS latest_modification
-		FROM "USER" u
-		JOIN note n ON u.id = n.id_user
-		WHERE u.id = :1
-		GROUP BY
-			u.first_name,
-			u.last_name,
-			u.email
-	`
+        u.first_name,
+        u.last_name,
+        u.email,
+        COALESCE(TO_CHAR(
+            AVG(
+                EXTRACT(DAY FROM (n.date_of_modification - n.date_of_creation)) * 86400 +
+                EXTRACT(HOUR FROM (n.date_of_modification - n.date_of_creation)) * 3600 +
+                EXTRACT(MINUTE FROM (n.date_of_modification - n.date_of_creation)) * 60 +
+                EXTRACT(SECOND FROM (n.date_of_modification - n.date_of_creation))
+            ), 'FM9999999990.00'), 'No data') AS avg_modification_time,
+        COALESCE(TO_CHAR(
+            MAX(
+                CASE
+                    WHEN n.date_of_modification IS NOT NULL THEN
+                        EXTRACT(DAY FROM (n.date_of_modification - n.date_of_creation)) * 86400 +
+                        EXTRACT(HOUR FROM (n.date_of_modification - n.date_of_creation)) * 3600 +
+                        EXTRACT(MINUTE FROM (n.date_of_modification - n.date_of_creation)) * 60 +
+                        EXTRACT(SECOND FROM (n.date_of_modification - n.date_of_creation))
+                    ELSE NULL
+                END
+            ), 'FM9999999990.00'), 'No data') AS max_unmodified_time,
+        COALESCE(TO_CHAR(MAX(n.date_of_modification), 'YYYY-MM-DD HH24:MI:SS'), 'No data') AS latest_modification
+    FROM "USER" u
+    LEFT JOIN note n ON u.id = n.id_user
+    WHERE u.id = :1
+    GROUP BY
+        u.first_name,
+        u.last_name,
+        u.email
+    `
 
 	row := om.DB.QueryRow(query, userID)
 	err := row.Scan(&firstName, &lastName, &email, &avgModificationTime, &maxUnmodifiedTime, &latestModification)
@@ -75,11 +91,7 @@ func (om *OracleManager) GetUserModifiedNotesStats(userID string) (types.Modifie
 
 	stats.AvgModificationTime = avgModificationTime
 	stats.MaxUnmodifiedTime = maxUnmodifiedTime
-	if latestModification.Valid {
-		stats.LatestModificationTime = latestModification.Time.Format("2006-01-02 15:04:05")
-	} else {
-		stats.LatestModificationTime = ""
-	}
-
+	stats.LatestModificationTime = latestModification // Directly use the string
+	fmt.Println("stats", stats)
 	return stats, nil
 }
