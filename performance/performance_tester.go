@@ -1,7 +1,6 @@
 package performance
 
 import (
-	"database-tester/dynamodb"
 	"database-tester/mysqldb"
 	"database-tester/types"
 	"fmt"
@@ -20,6 +19,8 @@ type StorageManager interface {
 	InsertUser(user types.User) (id string, err error)
 	GetUser(id string) (user types.User, err error)
 	PatchUser(user types.User) (id string, err error)
+	GetUserStats(userID string) (stats types.UserStats, err error)
+	GetUserModifiedNotesStats(userID string) (stats types.ModifiedNotesStats, err error)
 	DeleteUser(user types.User) (id string, err error)
 }
 
@@ -28,45 +29,47 @@ type PerformanceSuite struct {
 	logFile        *os.File
 }
 
-func RunPerformanceTest() {
-
-	fmt.Println("Creating DynamoDB manager")
-	manager, err := dynamodb.NewDynamoManager()
-	if err != nil {
-		fmt.Println("Error creating DynamoDB manager:", err)
-		return
-	}
-
-	file, err := os.OpenFile("performance/data/dynamo.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		fmt.Println("Error opening performance.log:", err)
-		return
-	}
-	defer file.Close()
-
-	fmt.Println("Reading data from files")
-	users, notes, updatedNotes, err := readDataFromFiles()
-	if err != nil {
-		fmt.Println("Error reading files:", err)
-		return
-	}
-
-	fmt.Println("Starting performance test")
-	ps := PerformanceSuite{
-		StorageManager: manager,
-		logFile:        file,
-	}
-	ps.measureInsertUserPerformance(users)
-	ps.measureInsertNotePerformance(notes)
-	ps.measureGetUserPerformance(users)
-	ps.measureGetNotePerformance(notes)
-	ps.measureGetUserNotesPerformance(users)
-	ps.measurePatchUserPerformance(users)
-	ps.measurePatchNotePerformance(updatedNotes)
-	ps.measureDeleteNotePerformance(notes)
-	ps.measureDeleteUserPerformance(users)
-
-}
+//func RunPerformanceTest() {
+//
+//	fmt.Println("Creating DynamoDB manager")
+//	manager, err := dynamodb.NewDynamoManager()
+//	if err != nil {
+//		fmt.Println("Error creating DynamoDB manager:", err)
+//		return
+//	}
+//
+//	file, err := os.OpenFile("performance/data/dynamo.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+//	if err != nil {
+//		fmt.Println("Error opening performance.log:", err)
+//		return
+//	}
+//	defer file.Close()
+//
+//	fmt.Println("Reading data from files")
+//	users, notes, updatedNotes, err := readDataFromFiles()
+//	if err != nil {
+//		fmt.Println("Error reading files:", err)
+//		return
+//	}
+//
+//	fmt.Println("Starting performance test")
+//	ps := PerformanceSuite{
+//		StorageManager: manager,
+//		logFile:        file,
+//	}
+//	ps.measureInsertUserPerformance(users)
+//	ps.measureInsertNotePerformance(notes)
+//	ps.measureGetUserPerformance(users)
+//	ps.measureGetNotePerformance(notes)
+//	ps.measureGetUserNotesPerformance(users)
+//	ps.measureGetUserStatsPerformance(users)
+//	ps.measurePatchUserPerformance(users)
+//	ps.measurePatchNotePerformance(updatedNotes)
+//	ps.getUserModifiedNotesStatsPerformance(users)
+//	ps.measureDeleteNotePerformance(notes)
+//	ps.measureDeleteUserPerformance(users)
+//
+//}
 
 func RunMySQLPerformanceTest() {
 	fmt.Println("Creating MySQLDB manager")
@@ -89,7 +92,6 @@ func RunMySQLPerformanceTest() {
 		fmt.Println("Error reading files:", err)
 		return
 	}
-
 	fmt.Println("Starting MySQL performance test")
 	ps := PerformanceSuite{
 		StorageManager: manager,
@@ -100,8 +102,10 @@ func RunMySQLPerformanceTest() {
 	ps.measureGetUserPerformance(users)
 	ps.measureGetNotePerformance(notes)
 	ps.measureGetUserNotesPerformance(users)
+	ps.measureGetUserStatsPerformance(users)
 	ps.measurePatchUserPerformance(users)
 	ps.measurePatchNotePerformance(updatedNotes)
+	ps.getUserModifiedNotesStatsPerformance(users)
 	ps.measureDeleteNotePerformance(notes)
 	ps.measureDeleteUserPerformance(users)
 }
@@ -176,6 +180,20 @@ func (ps PerformanceSuite) measureGetUserNotesPerformance(users []types.User) {
 	}
 }
 
+func (ps PerformanceSuite) measureGetUserStatsPerformance(users []types.User) {
+
+	start := time.Now()
+	for i, u := range users {
+		_, err := ps.StorageManager.GetUserStats(u.ID)
+		if err != nil {
+			fmt.Println("Error getting user stats:", err)
+			return
+		}
+
+		ps.logPerformanceRecord("Get", "User Stats", i, len(users), time.Since(start))
+	}
+}
+
 func (ps PerformanceSuite) measurePatchUserPerformance(users []types.User) {
 
 	start := time.Now()
@@ -202,6 +220,19 @@ func (ps PerformanceSuite) measurePatchNotePerformance(notes []types.Note) {
 		}
 
 		ps.logPerformanceRecord("Patch", "Note", i, len(notes), time.Since(start))
+	}
+}
+
+func (ps PerformanceSuite) getUserModifiedNotesStatsPerformance(users []types.User) {
+
+	start := time.Now()
+	for i, u := range users {
+		_, err := ps.StorageManager.GetUserModifiedNotesStats(u.ID)
+		if err != nil {
+			fmt.Println("Error getting user modified notes stats:", err)
+			return
+		}
+		ps.logPerformanceRecord("Get", "User Modified Notes Stats", i, len(users), time.Since(start))
 	}
 }
 
