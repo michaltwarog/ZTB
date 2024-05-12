@@ -67,9 +67,8 @@ func RunPerformanceTest() {
 	ps.measurePatchUserPerformance(users)
 	ps.measurePatchNotePerformance(updatedNotes)
 	ps.getUserModifiedNotesStatsPerformance(users)
-	ps.measureGetUserStatsPerformance(users)
-	// ps.measureDeleteNotePerformance(notes)
-	// ps.measureDeleteUserPerformance(users)
+	ps.measureDeleteNotePerformance(notes)
+	ps.measureDeleteUserPerformance(users)
 
 }
 
@@ -102,21 +101,18 @@ func RunOraclePerformanceTest() {
 		StorageManager: manager,
 		logFile:        file,
 	}
-	// ps.measureInsertUserPerformance(users)
-	// ps.measureInsertNotePerformance(notes)
-	// ps.measureGetUserPerformance(users)
-	// ps.measureGetNotePerformance(notes)
-	// ps.measureGetUserNotesPerformance(users)
-
-	// ps.measureGetUserStatsPerformance(users)
-
-	// ps.measurePatchUserPerformance(users)
-	// ps.measurePatchNotePerformance(updatedNotes)
-
+	ps.measureInsertUserPerformance(users)
+	ps.measureInsertNotePerformance(notes)
+	ps.measureGetUserPerformance(users)
+	ps.measureGetNotePerformance(notes)
+	ps.measureGetUserNotesPerformance(users)
+	ps.measurePatchUserPerformance(users)
+	ps.measurePatchNotePerformance(updatedNotes)
 	ps.getUserModifiedNotesStatsPerformance(users)
+	ps.measureGetUserStatsPerformance(users)
+	ps.measureDeleteNotePerformance(notes)
+	ps.measureDeleteUserPerformance(users)
 
-	// ps.measureDeleteNotePerformance(notes)
-	// ps.measureDeleteUserPerformance(users)
 }
 
 func (ps PerformanceSuite) measureInsertUserPerformance(users []types.User) {
