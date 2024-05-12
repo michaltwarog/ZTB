@@ -1,6 +1,7 @@
 package performance
 
 import (
+	"database-tester/dynamodb"
 	oracledb "database-tester/orcl"
 	"database-tester/types"
 	"fmt"
@@ -29,47 +30,47 @@ type PerformanceSuite struct {
 	logFile        *os.File
 }
 
-// func RunPerformanceTest() {
+func RunPerformanceTest() {
 
-// 	fmt.Println("Creating DynamoDB manager")
-// 	manager, err := dynamodb.NewDynamoManager()
-// 	if err != nil {
-// 		fmt.Println("Error creating DynamoDB manager:", err)
-// 		return
-// 	}
+	fmt.Println("Creating DynamoDB manager")
+	manager, err := dynamodb.NewDynamoManager()
+	if err != nil {
+		fmt.Println("Error creating DynamoDB manager:", err)
+		return
+	}
 
-// 	file, err := os.OpenFile("performance/data/dynamo.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-// 	if err != nil {
-// 		fmt.Println("Error opening performance.log:", err)
-// 		return
-// 	}
-// 	defer file.Close()
+	file, err := os.OpenFile("performance/data/dynamo.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Error opening performance.log:", err)
+		return
+	}
+	defer file.Close()
 
-// 	fmt.Println("Reading data from files")
-// 	users, notes, updatedNotes, err := readDataFromFiles()
-// 	if err != nil {
-// 		fmt.Println("Error reading files:", err)
-// 		return
-// 	}
+	fmt.Println("Reading data from files")
+	users, notes, updatedNotes, err := readDataFromFiles()
+	if err != nil {
+		fmt.Println("Error reading files:", err)
+		return
+	}
 
-// 	fmt.Println("Starting performance test")
-// 	ps := PerformanceSuite{
-// 		StorageManager: manager,
-// 		logFile:        file,
-// 	}
-// 	ps.measureInsertUserPerformance(users)
-// 	ps.measureInsertNotePerformance(notes)
-// 	ps.measureGetUserPerformance(users)
-// 	ps.measureGetNotePerformance(notes)
-// 	ps.measureGetUserNotesPerformance(users)
-// 	ps.measureGetUserStatsPerformance(users)
-// 	ps.measurePatchUserPerformance(users)
-// 	ps.measurePatchNotePerformance(updatedNotes)
-// 	ps.getUserModifiedNotesStatsPerformance(users)
-// 	ps.measureDeleteNotePerformance(notes)
-// 	ps.measureDeleteUserPerformance(users)
+	fmt.Println("Starting performance test")
+	ps := PerformanceSuite{
+		StorageManager: manager,
+		logFile:        file,
+	}
+	ps.measureInsertUserPerformance(users)
+	ps.measureInsertNotePerformance(notes)
+	ps.measureGetUserPerformance(users)
+	ps.measureGetNotePerformance(notes)
+	ps.measureGetUserNotesPerformance(users)
+	ps.measureGetUserStatsPerformance(users)
+	ps.measurePatchUserPerformance(users)
+	ps.measurePatchNotePerformance(updatedNotes)
+	ps.getUserModifiedNotesStatsPerformance(users)
+	ps.measureDeleteNotePerformance(notes)
+	ps.measureDeleteUserPerformance(users)
 
-// }
+}
 
 func RunOraclePerformanceTest() {
 	fmt.Println("Creating OracleDB manager")
@@ -100,21 +101,18 @@ func RunOraclePerformanceTest() {
 		StorageManager: manager,
 		logFile:        file,
 	}
-	// ps.measureInsertUserPerformance(users)
-	// ps.measureInsertNotePerformance(notes)
-	// ps.measureGetUserPerformance(users)
-	// ps.measureGetNotePerformance(notes)
-	// ps.measureGetUserNotesPerformance(users)
-
-	ps.measureGetUserStatsPerformance(users)
-
-	// ps.measurePatchUserPerformance(users)
-	// ps.measurePatchNotePerformance(updatedNotes)
-
+	ps.measureInsertUserPerformance(users)
+	ps.measureInsertNotePerformance(notes)
+	ps.measureGetUserPerformance(users)
+	ps.measureGetNotePerformance(notes)
+	ps.measureGetUserNotesPerformance(users)
+	ps.measurePatchUserPerformance(users)
+	ps.measurePatchNotePerformance(updatedNotes)
 	ps.getUserModifiedNotesStatsPerformance(users)
+	ps.measureGetUserStatsPerformance(users)
+	ps.measureDeleteNotePerformance(notes)
+	ps.measureDeleteUserPerformance(users)
 
-	// ps.measureDeleteNotePerformance(notes)
-	// ps.measureDeleteUserPerformance(users)
 }
 
 func (ps PerformanceSuite) measureInsertUserPerformance(users []types.User) {
