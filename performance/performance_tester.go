@@ -2,6 +2,7 @@ package performance
 
 import (
 	"database-tester/dynamodb"
+	oracledb "database-tester/orcl"
 	"database-tester/types"
 	"fmt"
 	"math"
@@ -19,6 +20,8 @@ type StorageManager interface {
 	InsertUser(user types.User) (id string, err error)
 	GetUser(id string) (user types.User, err error)
 	PatchUser(user types.User) (id string, err error)
+	GetUserStats(userID string) (stats types.UserStats, err error)
+	GetUserModifiedNotesStats(userID string) (stats types.ModifiedNotesStats, err error)
 	DeleteUser(user types.User) (id string, err error)
 }
 
@@ -60,11 +63,60 @@ func RunPerformanceTest() {
 	ps.measureGetUserPerformance(users)
 	ps.measureGetNotePerformance(notes)
 	ps.measureGetUserNotesPerformance(users)
+	ps.measureGetUserStatsPerformance(users)
 	ps.measurePatchUserPerformance(users)
 	ps.measurePatchNotePerformance(updatedNotes)
-	ps.measureDeleteNotePerformance(notes)
-	ps.measureDeleteUserPerformance(users)
+	ps.getUserModifiedNotesStatsPerformance(users)
+	ps.measureGetUserStatsPerformance(users)
+	// ps.measureDeleteNotePerformance(notes)
+	// ps.measureDeleteUserPerformance(users)
 
+}
+
+func RunOraclePerformanceTest() {
+	fmt.Println("Creating OracleDB manager")
+	manager, err := oracledb.NewOracleManager()
+	if err != nil {
+		fmt.Println("Error creating OracleDB manager:", err)
+		return
+	}
+
+	file, err := os.OpenFile("performance/data/oracle.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Error opening oracle.log:", err)
+		return
+	}
+	defer file.Close()
+
+	fmt.Println("Reading data from files")
+	users, notes, updatedNotes, err := readDataFromFiles()
+	if err != nil {
+		fmt.Println("Error reading files:", err)
+		return
+	}
+	_ = updatedNotes
+	_ = users
+	_ = notes
+	fmt.Println("Starting Oracle performance test")
+	ps := PerformanceSuite{
+		StorageManager: manager,
+		logFile:        file,
+	}
+	// ps.measureInsertUserPerformance(users)
+	// ps.measureInsertNotePerformance(notes)
+	// ps.measureGetUserPerformance(users)
+	// ps.measureGetNotePerformance(notes)
+	// ps.measureGetUserNotesPerformance(users)
+
+	// ps.measureGetUserStatsPerformance(users)
+
+	// ps.measurePatchUserPerformance(users)
+	// ps.measurePatchNotePerformance(updatedNotes)
+
+	ps.getUserModifiedNotesStatsPerformance(users)
+
+	// ps.measureDeleteNotePerformance(notes)
+	// ps.measureDeleteUserPerformance(users)
 }
 
 func (ps PerformanceSuite) measureInsertUserPerformance(users []types.User) {
@@ -132,8 +184,21 @@ func (ps PerformanceSuite) measureGetUserNotesPerformance(users []types.User) {
 			fmt.Println("Error getting user notes:", err)
 			return
 		}
-
 		ps.logPerformanceRecord("Get", "User Notes", i, len(users)*notesPerUser, time.Since(start))
+	}
+}
+
+func (ps PerformanceSuite) measureGetUserStatsPerformance(users []types.User) {
+
+	start := time.Now()
+	for i, u := range users {
+		_, err := ps.StorageManager.GetUserStats(u.ID)
+		if err != nil {
+			fmt.Println("Error getting user stats:", err)
+			return
+		}
+
+		ps.logPerformanceRecord("Get", "User Stats", i, len(users), time.Since(start))
 	}
 }
 
@@ -163,6 +228,19 @@ func (ps PerformanceSuite) measurePatchNotePerformance(notes []types.Note) {
 		}
 
 		ps.logPerformanceRecord("Patch", "Note", i, len(notes), time.Since(start))
+	}
+}
+
+func (ps PerformanceSuite) getUserModifiedNotesStatsPerformance(users []types.User) {
+
+	start := time.Now()
+	for i, u := range users {
+		_, err := ps.StorageManager.GetUserModifiedNotesStats(u.ID)
+		if err != nil {
+			fmt.Println("Error getting user modified notes stats:", err)
+			return
+		}
+		ps.logPerformanceRecord("Get", "User Modified Notes Stats", i, len(users), time.Since(start))
 	}
 }
 
