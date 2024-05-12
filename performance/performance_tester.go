@@ -3,6 +3,7 @@ package performance
 import (
 	"database-tester/dynamodb"
 	oracledb "database-tester/orcl"
+	"database-tester/mysqldb"
 	"database-tester/types"
 	"fmt"
 	"math"
@@ -63,7 +64,6 @@ func RunPerformanceTest() {
 	ps.measureGetUserPerformance(users)
 	ps.measureGetNotePerformance(notes)
 	ps.measureGetUserNotesPerformance(users)
-	ps.measureGetUserStatsPerformance(users)
 	ps.measurePatchUserPerformance(users)
 	ps.measurePatchNotePerformance(updatedNotes)
 	ps.getUserModifiedNotesStatsPerformance(users)
@@ -113,6 +113,45 @@ func RunOraclePerformanceTest() {
 	ps.measureDeleteNotePerformance(notes)
 	ps.measureDeleteUserPerformance(users)
 
+}
+
+func RunMySQLPerformanceTest() {
+	fmt.Println("Creating MySQLDB manager")
+	manager, err := mysqldb.NewMySQLManager()
+	if err != nil {
+		fmt.Println("Error creating MySQLDB manager:", err)
+		return
+	}
+
+	file, err := os.OpenFile("performance/data/mysql.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Error opening mysql.log:", err)
+		return
+	}
+	defer file.Close()
+
+	fmt.Println("Reading data from files")
+	users, notes, updatedNotes, err := readDataFromFiles()
+	if err != nil {
+		fmt.Println("Error reading files:", err)
+		return
+	}
+	fmt.Println("Starting MySQL performance test")
+	ps := PerformanceSuite{
+		StorageManager: manager,
+		logFile:        file,
+	}
+	ps.measureInsertUserPerformance(users)
+	ps.measureInsertNotePerformance(notes)
+	ps.measureGetUserPerformance(users)
+	ps.measureGetNotePerformance(notes)
+	ps.measureGetUserNotesPerformance(users)
+	ps.measureGetUserStatsPerformance(users)
+	ps.measurePatchUserPerformance(users)
+	ps.measurePatchNotePerformance(updatedNotes)
+	ps.getUserModifiedNotesStatsPerformance(users)
+	ps.measureDeleteNotePerformance(notes)
+	ps.measureDeleteUserPerformance(users)
 }
 
 func (ps PerformanceSuite) measureInsertUserPerformance(users []types.User) {
