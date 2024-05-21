@@ -2,13 +2,14 @@ version: '3.8'
 services:
   dynamodb-local:
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
-    image: "amazon/dynamodb-local:latest"
+    image: amazon/dynamodb-local:latest
     container_name: dynamodb-local
     ports:
       - "8000:8000"
     volumes:
-      - "./docker/dynamodb:/home/dynamodblocal/data"
+      - ./docker/dynamodb:/home/dynamodblocal/data
     working_dir: /home/dynamodblocal
+  
   oracle-db:
     image: container-registry.oracle.com/database/express:latest
     environment:
@@ -16,18 +17,21 @@ services:
       - ORACLE_PDB=system
       - ORACLE_PWD=abc123
     ports:
-      - 1521:1521
+      - "1521:1521"
     volumes:
       - oracle-data:/opt/oracle/oradata
       - oracle-backup:/opt/oracle/backup
+      - ./orcl/initdb:/opt/oracle/scripts/startup
+    restart: unless-stopped
+
   mysql-ztb:
     image: mysql:8.0.32
     container_name: mysql-ztb
     environment:
-      MYSQL_ROOT_PASSWORD: admin
-      MYSQL_DATABASE: mysql_ztb
-      MYSQL_USER: adminuser
-      MYSQL_PASSWORD: admin
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=mysql_ztb
+      - MYSQL_USER=adminuser
+      - MYSQL_PASSWORD=admin
     ports:
       - "3306:3306"
     volumes:
